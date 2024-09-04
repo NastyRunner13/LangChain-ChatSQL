@@ -47,7 +47,6 @@ def get_database(config):
     else:
         raise ValueError("Invalid database type")
 
-# LLM and agent setup
 def setup_agent(db, api_key):
     llm = ChatGroq(api_key=api_key, model="Llama-3.1-70b-Versatile", streaming=True)
     toolkit = SQLDatabaseToolkit(db=db, llm=llm)
@@ -88,14 +87,14 @@ def main():
     if user_query:
         st.session_state.messages.append({"role": "user", "content": user_query})
         st.chat_message("user").write(user_query)
-        with st.chat_message("assistant"):
-            streamlit_callback = StreamlitCallbackHandler(st.container())
-            try:
-                response = agent.run(user_query, callbacks=[streamlit_callback])
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                st.write(response)
-            except Exception as e:
-                st.error(f"An error occurred: {str(e)}")
+        container = st.container()
+        streamlit_callback = StreamlitCallbackHandler(container)
+        try:
+            response = agent.run(user_query, callbacks=[streamlit_callback])
+            st.session_state.messages.append({"role": "assistant", "content": response})
+            container.write(response)
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
 
 if __name__ == "__main__":
     main()
